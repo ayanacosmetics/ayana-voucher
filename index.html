@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voucher Spesial Ayana Cosmetics</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <div class="badge" id="promoName">FLASH VOUCHER</div>
+      <h1>Ayana Cosmetics</h1>
+      <p class="subtitle">Voucher spesial untuk yang tercepat!</p>
+
+      <div class="voucher-box">
+        <span class="small">Potongan</span>
+        <strong id="discountText">Rp5.000</strong>
+        <span class="small" id="minimumText">Minimal belanja Rp50.000</span>
+      </div>
+
+      <p id="deadline" class="deadline">Batas waktu: -</p>
+      <p id="stock" class="stock">Mengecek sisa voucher...</p>
+
+      <div id="formArea" class="form-area">
+        <input id="name" type="text" placeholder="Nama kamu" autocomplete="name" />
+        <input id="phone" type="tel" placeholder="Nomor WhatsApp" autocomplete="tel" />
+        <button id="claimBtn">Klaim Voucher Sekarang</button>
+      </div>
+
+      <div id="result" class="result hidden"></div>
+      <p class="terms" id="terms">Tunjukkan kode voucher ke kasir saat belanja di Ayana Cosmetics.</p>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

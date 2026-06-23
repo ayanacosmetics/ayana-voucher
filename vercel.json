@@ -16,6 +16,10 @@
       "dest": "/api/$1.js"
     },
     {
+      "src": "/logo-ayana-baru.png",
+      "dest": "/public/logo-ayana-baru.png"
+    },
+    {
       "src": "/(.*)",
       "dest": "/public/index.html"
     }

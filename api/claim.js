@@ -12,15 +12,38 @@ module.exports = async function handler(req, res) {
     if (!phone.startsWith('62')) return res.status(400).json({ ok:false, message:'Gunakan nomor WhatsApp format 62 atau 08.' });
     if (!kodePromo) return res.status(400).json({ ok:false, message:'Pilih promo terlebih dahulu.' });
 
-    const [memberRows, promoRows, voucherRows] = await Promise.all([
-      readRange('Member!A:B'), readRange('Promo!A:H'), readRange('Voucher!A:F')
+    const [memberRows, promoRows, voucherRows, logRows] = await Promise.all([
+      readRange('Member!A:B'),
+      readRange('Promo!A:H'),
+      readRange('Voucher!A:F'),
+      readRange('Log Non Member!A:D')
     ]);
 
     let namaMember = '';
     for (let i = 1; i < memberRows.length; i++) {
-      if (normalizePhone(memberRows[i][0]) === phone) { namaMember = memberRows[i][1] || ''; break; }
+      if (normalizePhone(memberRows[i][0]) === phone) {
+        namaMember = memberRows[i][1] || '';
+        break;
+      }
     }
-    if (!namaMember) return res.status(200).json({ ok:false, status:'notmember', message:'Nomor WhatsApp ini belum terdaftar sebagai Member Ayana Cosmetics.' });
+
+    if (!namaMember) {
+      const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Makassar' });
+      const nextRow = (logRows.length || 1) + 1;
+
+      await updateRange(`Log Non Member!A${nextRow}:D${nextRow}`, [[
+        now,
+        phone,
+        kodePromo,
+        'Nomor belum terdaftar sebagai member'
+      ]]);
+
+      return res.status(200).json({
+        ok:false,
+        status:'notmember',
+        message:'Nomor WhatsApp ini belum terdaftar sebagai Member Ayana Cosmetics.'
+      });
+    }
 
     const promo = findActivePromos(promoRows).find(p => p.kodePromo === kodePromo);
     if (!promo) return res.status(200).json({ ok:false, status:'inactive', message:'Promo tidak aktif, belum dimulai, atau sudah berakhir.' });
@@ -39,6 +62,7 @@ module.exports = async function handler(req, res) {
         break;
       }
     }
+
     if (sheetRow < 0) return res.status(200).json({ ok:false, status:'habis', message:'Yah, voucher untuk promo ini sudah habis.' });
 
     const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Makassar' });

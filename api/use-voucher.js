@@ -48,10 +48,10 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    if (voucher.status === 'TERPAKAI') {
+    if (voucher.status !== 'DIKLAIM') {
       return res.status(200).json({
         ok: false,
-        message: 'Voucher ini sudah pernah digunakan.'
+        message: 'Voucher belum diklaim atau tidak valid untuk digunakan.'
       });
     }
 

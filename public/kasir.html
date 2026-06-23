@@ -6,134 +6,116 @@
 <title>Kasir Ayana Cosmetics</title>
 
 <style>
-body{
-font-family:Arial,sans-serif;
-background:#ffe4ef;
-margin:0;
-padding:20px;
-}
-
-.card{
-max-width:450px;
-margin:auto;
-background:white;
-padding:25px;
-border-radius:25px;
-box-shadow:0 10px 25px rgba(0,0,0,.1);
-}
-
-h1{
-text-align:center;
-color:#d81b60;
-}
-
-input{
-width:100%;
-padding:14px;
-border-radius:12px;
-border:2px solid #f8bbd0;
-box-sizing:border-box;
-font-size:16px;
-}
-
-button{
-width:100%;
-margin-top:12px;
-padding:14px;
-border:none;
-border-radius:999px;
-background:#d81b60;
-color:white;
-font-weight:bold;
-cursor:pointer;
-}
-
-.result{
-margin-top:20px;
-padding:15px;
-border-radius:15px;
-background:#fff4f8;
-line-height:1.8;
-}
+body{font-family:Arial,sans-serif;background:#ffe4ef;margin:0;padding:20px}
+.card{max-width:450px;margin:auto;background:white;padding:25px;border-radius:25px;box-shadow:0 10px 25px rgba(0,0,0,.1)}
+h1{text-align:center;color:#d81b60}
+input{width:100%;padding:14px;border-radius:12px;border:2px solid #f8bbd0;box-sizing:border-box;font-size:16px}
+button{width:100%;margin-top:12px;padding:14px;border:none;border-radius:999px;background:#d81b60;color:white;font-weight:bold;cursor:pointer}
+.result{margin-top:20px;padding:15px;border-radius:15px;background:#fff4f8;line-height:1.8}
+.ok{color:green;font-weight:bold}
+.bad{color:red;font-weight:bold}
+.usebtn{background:#0f9d58}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-
 <h1>Kasir Ayana</h1>
 
-<input
-id="kode"
-placeholder="Scan / masukkan kode voucher">
+<input id="kode" placeholder="Scan / masukkan kode voucher">
 
-<button onclick="cekVoucher()">
-CEK VOUCHER
-</button>
+<button onclick="cekVoucher()">CEK VOUCHER</button>
 
 <div id="hasil"></div>
-
 </div>
 
 <script>
+let kodeTerakhir = "";
 
 async function cekVoucher(){
+  const kode = document.getElementById("kode").value.trim().toUpperCase();
+  if(!kode) return;
 
-const kode=document.getElementById("kode").value.trim();
+  kodeTerakhir = kode;
+  const hasil = document.getElementById("hasil");
+  hasil.innerHTML = "Memeriksa voucher...";
 
-if(!kode)return;
+  try{
+    const r = await fetch(`/api/verify?kode=${encodeURIComponent(kode)}`);
+    const d = await r.json();
 
-const hasil=document.getElementById("hasil");
+    if(!d.ok){
+      hasil.innerHTML = `<div class="result"><span class="bad">❌ ${d.message}</span></div>`;
+      return;
+    }
 
-hasil.innerHTML="Memeriksa voucher...";
+    const status = String(d.voucher.status || "").toUpperCase();
+    const warnaStatus = status === "TERSEDIA" ? "ok" : "bad";
 
-try{
+    let tombolGunakan = "";
 
-const r=await fetch(`/api/verify?kode=${encodeURIComponent(kode)}`);
+    if(status === "TERSEDIA"){
+      tombolGunakan = `<button class="usebtn" onclick="gunakanVoucher()">GUNAKAN VOUCHER</button>`;
+    }
 
-const d=await r.json();
+    hasil.innerHTML =
+    `<div class="result">
+      ✅ Voucher ditemukan<br>
+      <b>Kode:</b> ${d.voucher.kodeVoucher}<br>
+      <b>Member:</b> ${d.voucher.namaMember}<br>
+      <b>WA:</b> ${d.voucher.nomorWA}<br>
+      <b>Promo:</b> ${d.promo.namaPromo}<br>
+      <b>Diskon:</b> Rp${Number(d.promo.diskon).toLocaleString("id-ID")}<br>
+      <b>Status:</b> <span class="${warnaStatus}">${status}</span>
+      ${tombolGunakan}
+    </div>`;
 
-if(!d.ok){
-
-hasil.innerHTML=
-`<div class="result">
-❌ ${d.message}
-</div>`;
-
-return;
+  }catch(err){
+    hasil.innerHTML = `<div class="result"><span class="bad">❌ Error server</span></div>`;
+  }
 }
 
-hasil.innerHTML=
-`<div class="result">
+async function gunakanVoucher(){
+  if(!kodeTerakhir) return;
 
-✅ Voucher ditemukan
+  if(!confirm("Gunakan voucher ini sekarang?")) return;
 
-<br><b>Kode:</b> ${d.voucher.kodeVoucher}
+  const hasil = document.getElementById("hasil");
+  hasil.innerHTML += "<br>Memproses penggunaan voucher...";
 
-<br><b>Member:</b> ${d.voucher.namaMember}
+  try{
+    const r = await fetch("/api/use-voucher", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ kode: kodeTerakhir })
+    });
 
-<br><b>WA:</b> ${d.voucher.nomorWA}
+    const d = await r.json();
 
-<br><b>Promo:</b> ${d.promo.namaPromo}
+    if(d.ok){
+      hasil.innerHTML =
+      `<div class="result">
+        <span class="ok">✅ ${d.message}</span><br>
+        <b>Kode:</b> ${d.kodeVoucher}<br>
+        <b>Member:</b> ${d.namaMember}<br>
+        <b>WA:</b> ${d.nomorWA}<br>
+        <b>Waktu Pakai:</b> ${d.waktuPakai}
+      </div>`;
+    }else{
+      hasil.innerHTML =
+      `<div class="result">
+        <span class="bad">❌ ${d.message}</span>
+      </div>`;
+    }
 
-<br><b>Diskon:</b> Rp${Number(d.promo.diskon).toLocaleString("id-ID")}
-
-<br><b>Status:</b> ${d.voucher.status}
-
-</div>`;
-
-}catch(err){
-
-hasil.innerHTML=
-`<div class="result">
-❌ Error server
-</div>`;
-
+  }catch(err){
+    hasil.innerHTML =
+    `<div class="result">
+      <span class="bad">❌ Error server</span>
+    </div>`;
+  }
 }
-
-}
-
 </script>
 
 </body>

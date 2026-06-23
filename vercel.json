@@ -20,6 +20,10 @@
       "dest": "/public/logo-ayana-baru.png"
     },
     {
+      "src": "/kasir",
+      "dest": "/public/kasir.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/public/index.html"
     }

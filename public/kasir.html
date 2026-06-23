@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kasir Ayana Cosmetics</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#ffe4ef;
+margin:0;
+padding:20px;
+}
+
+.card{
+max-width:450px;
+margin:auto;
+background:white;
+padding:25px;
+border-radius:25px;
+box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+
+h1{
+text-align:center;
+color:#d81b60;
+}
+
+input{
+width:100%;
+padding:14px;
+border-radius:12px;
+border:2px solid #f8bbd0;
+box-sizing:border-box;
+font-size:16px;
+}
+
+button{
+width:100%;
+margin-top:12px;
+padding:14px;
+border:none;
+border-radius:999px;
+background:#d81b60;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.result{
+margin-top:20px;
+padding:15px;
+border-radius:15px;
+background:#fff4f8;
+line-height:1.8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>Kasir Ayana</h1>
+
+<input
+id="kode"
+placeholder="Scan / masukkan kode voucher">
+
+<button onclick="cekVoucher()">
+CEK VOUCHER
+</button>
+
+<div id="hasil"></div>
+
+</div>
+
+<script>
+
+async function cekVoucher(){
+
+const kode=document.getElementById("kode").value.trim();
+
+if(!kode)return;
+
+const hasil=document.getElementById("hasil");
+
+hasil.innerHTML="Memeriksa voucher...";
+
+try{
+
+const r=await fetch(`/api/verify?kode=${encodeURIComponent(kode)}`);
+
+const d=await r.json();
+
+if(!d.ok){
+
+hasil.innerHTML=
+`<div class="result">
+❌ ${d.message}
+</div>`;
+
+return;
+}
+
+hasil.innerHTML=
+`<div class="result">
+
+✅ Voucher ditemukan
+
+<br><b>Kode:</b> ${d.voucher.kodeVoucher}
+
+<br><b>Member:</b> ${d.voucher.namaMember}
+
+<br><b>WA:</b> ${d.voucher.nomorWA}
+
+<br><b>Promo:</b> ${d.promo.namaPromo}
+
+<br><b>Diskon:</b> Rp${Number(d.promo.diskon).toLocaleString("id-ID")}
+
+<br><b>Status:</b> ${d.voucher.status}
+
+</div>`;
+
+}catch(err){
+
+hasil.innerHTML=
+`<div class="result">
+❌ Error server
+</div>`;
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

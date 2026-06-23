@@ -23,7 +23,7 @@ button{width:100%;margin-top:12px;padding:14px;border:none;border-radius:999px;b
 <div class="card">
 <h1>Kasir Ayana</h1>
 
-<input id="kode" placeholder="Scan / masukkan kode voucher">
+<input id="kode" placeholder="Scan / masukkan kode voucher" autofocus onkeydown="handleScan(event)">
 
 <button onclick="cekVoucher()">CEK VOUCHER</button>
 
@@ -31,6 +31,13 @@ button{width:100%;margin-top:12px;padding:14px;border:none;border-radius:999px;b
 </div>
 
 <script>
+function handleScan(event){
+  if(event.key === "Enter"){
+    event.preventDefault();
+    cekVoucher();
+  }
+}
+
 let kodeTerakhir = "";
 
 async function cekVoucher(){
@@ -51,7 +58,7 @@ async function cekVoucher(){
     }
 
     const status = String(d.voucher.status || "").toUpperCase();
-    const warnaStatus = status === "TERSEDIA" ? "ok" : "bad";
+    const warnaStatus = status === "DIKLAIM" ? "ok" : "bad";
 
     let tombolGunakan = "";
 

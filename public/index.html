@@ -121,7 +121,7 @@ async function klaim(){
   const kodePromo=document.getElementById("kodePromo").value;
   const btn=document.getElementById("claimBtn");
 
-  btn.innerText="Memproses...";
+  btn.innerText="🎁 Membuka hadiah...";
   btn.disabled=true;
 
   try{
@@ -131,7 +131,17 @@ async function klaim(){
       body:JSON.stringify({phone,kodePromo})
     });
 
-    showResult(await r.json());
+    const data = await r.json();
+
+    if(data.status==="success"){
+      btn.innerText="✨ Menyiapkan Ayana Beauty Surprise...";
+
+      setTimeout(function(){
+        showResult(data);
+      }, 2000);
+    }else{
+      showResult(data);
+    }
 
   }catch(e){
     showResult({

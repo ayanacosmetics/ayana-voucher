@@ -159,7 +159,16 @@ function showResult(res){
   result.classList.remove("hidden");
 
   if(res.status==="success"){
-    const hadiah=formatRupiah(res.hadiahVoucher || res.diskon);
+    const nilaiHadiah = Number(res.hadiahVoucher || res.diskon || 0);
+let labelHadiah = "🌸 Beauty Reward";
+
+if(nilaiHadiah >= 20000){
+  labelHadiah = "👑 JACKPOT MEMBER";
+}else if(nilaiHadiah >= 10000){
+  labelHadiah = "⭐ Golden Surprise";
+}else if(nilaiHadiah >= 7500){
+  labelHadiah = "✨ Silver Surprise";
+}
     const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(res.kodeVoucher)}`;
 
     result.innerHTML=
@@ -168,7 +177,7 @@ function showResult(res){
     <p>Selamat, ${res.nama}! Kamu mendapatkan voucher kejutan.</p>
 
     <div class="ticket">
-      <div style="font-size:15px;font-weight:bold;">🎉 HADIAH VOUCHER KAMU</div>
+      <div style="font-size:15px;font-weight:bold;">${labelHadiah}</div>
       <div class="code">${hadiah}</div>
 
       <div style="font-size:13px;margin-top:8px;">Kode Voucher:</div>

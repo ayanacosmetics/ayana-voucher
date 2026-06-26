@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
     const [memberRows, promoRows, voucherRows, logRows] = await Promise.all([
       readRange('Member!A:B'),
       readRange('Promo!A:H'),
-      readRange('Voucher!A:F'),
+      readRange('Voucher!A:G'),
       readRange('Log Non Member!A:D')
     ]);
 
@@ -54,11 +54,12 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    let sheetRow = -1, kodeVoucher = '';
+    let sheetRow = -1, kodeVoucher = '', hadiahVoucher = '';
     for (let i = 1; i < voucherRows.length; i++) {
       if (String(voucherRows[i][1] || '').trim() === kodePromo && String(voucherRows[i][2] || '').trim().toUpperCase() === 'TERSEDIA') {
         sheetRow = i + 1;
         kodeVoucher = String(voucherRows[i][0] || '').trim();
+	hadiahVoucher = voucherRows[i][6] || '';
         break;
       }
     }
@@ -68,7 +69,7 @@ module.exports = async function handler(req, res) {
     const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Makassar' });
     await updateRange(`Voucher!C${sheetRow}:F${sheetRow}`, [['DIKLAIM', now, phone, namaMember]]);
 
-    return res.status(200).json({ ok:true, status:'success', nama:namaMember, phone, kodeVoucher, ...promo });
+    return res.status(200).json({ ok:true, status:'success', nama:namaMember, phone, kodeVoucher, hadiahVoucher, ...promo });
   } catch (err) {
     return res.status(500).json({ ok:false, status:'error', message: err.message });
   }

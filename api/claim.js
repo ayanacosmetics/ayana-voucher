@@ -10,17 +10,9 @@ module.exports = async function handler(req, res) {
     const phone = normalizePhone(rawPhone);
     const kodePromo = String(rawKodePromo || '').trim();
 
-    if (!phone) {
-      return res.status(400).json({ ok:false, message:'Nomor WhatsApp wajib diisi.' });
-    }
-
-    if (!phone.startsWith('62')) {
-      return res.status(400).json({ ok:false, message:'Gunakan nomor WhatsApp format 62 atau 08.' });
-    }
-
-    if (!kodePromo) {
-      return res.status(400).json({ ok:false, message:'Pilih promo terlebih dahulu.' });
-    }
+    if (!phone) return res.status(400).json({ ok:false, message:'Nomor WhatsApp wajib diisi.' });
+    if (!phone.startsWith('62')) return res.status(400).json({ ok:false, message:'Gunakan nomor WhatsApp format 62 atau 08.' });
+    if (!kodePromo) return res.status(400).json({ ok:false, message:'Pilih promo terlebih dahulu.' });
 
     const [memberRows, promoRows, voucherRows, logRows] = await Promise.all([
       readRange('Member!A:B'),
@@ -90,7 +82,17 @@ module.exports = async function handler(req, res) {
       if (rowKodePromo === kodePromo && rowStatus === 'TERSEDIA') {
         sheetRow = i + 1;
         kodeVoucher = String(voucherRows[i][0] || '').trim();
-        hadiahVoucher = String(voucherRows[i][6] || promo.diskon || '').trim();
+
+        hadiahVoucher = voucherRows[i][6];
+
+        if (hadiahVoucher === undefined || hadiahVoucher === null || String(hadiahVoucher).trim() === '') {
+          hadiahVoucher = promo.diskon || 0;
+        }
+
+        hadiahVoucher = String(hadiahVoucher).replace(/[^\d]/g, '');
+
+        if (!hadiahVoucher) hadiahVoucher = promo.diskon || 0;
+
         break;
       }
     }

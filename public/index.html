@@ -170,7 +170,36 @@ function showResult(res){
     }else if(nilaiHadiah >= 7500){
       labelHadiah = "✨ Silver Surprise";
     }
+ if(nilaiHadiah >= 10000){
+  setTimeout(function(){
+    document.body.insertAdjacentHTML("beforeend",
+      `<div id="confetti" style="
+        position:fixed;
+        inset:0;
+        pointer-events:none;
+        z-index:9999;
+        overflow:hidden;">
+      </div>`
+    );
 
+    const confetti = document.getElementById("confetti");
+
+    for(let i=0;i<40;i++){
+      const el=document.createElement("div");
+      el.innerHTML=["🎉","✨","💖","🎁"][Math.floor(Math.random()*4)];
+      el.style.position="absolute";
+      el.style.left=Math.random()*100+"%";
+      el.style.top="-40px";
+      el.style.fontSize=(18+Math.random()*18)+"px";
+      el.style.animation=`fall ${2+Math.random()*2}s linear forwards`;
+      confetti.appendChild(el);
+    }
+
+    setTimeout(function(){
+      confetti.remove();
+    },4000);
+  },300);
+}
     const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(res.kodeVoucher)}`;
 
     result.innerHTML=

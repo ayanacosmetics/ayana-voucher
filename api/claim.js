@@ -14,11 +14,12 @@ module.exports = async function handler(req, res) {
     if (!phone.startsWith('62')) return res.status(400).json({ ok:false, message:'Gunakan nomor WhatsApp format 62 atau 08.' });
     if (!kodePromo) return res.status(400).json({ ok:false, message:'Pilih promo terlebih dahulu.' });
 
-    const [memberRows, promoRows, voucherRows, logRows] = await Promise.all([
+    const [memberRows, promoRows, voucherRows, logRows, logGagalRows] = await Promise.all([
       readRange('Member!A:B'),
       readRange('Promo!A:H'),
       readRange('Voucher!A:G'),
-      readRange('Log Non Member!A:D')
+      readRange('Log Non Member!A:D'),
+      readRange('Log Klaim Gagal!A:G')
     ]);
 
     let namaMember = '';
@@ -63,9 +64,23 @@ module.exports = async function handler(req, res) {
       const rowPhone = normalizePhone(voucherRows[i][4]);
 
       if (rowKodePromo === kodePromo && rowPhone === phone) {
+        const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Makassar' });
+        const nextLogGagalRow = (logGagalRows.length || 1) + 1;
+
+        await updateRange(`Log Klaim Gagal!A${nextLogGagalRow}:G${nextLogGagalRow}`, [[
+          now,
+          phone,
+          namaMember,
+          kodePromo,
+          promo.namaPromo,
+          'DOUBLE KLAIM',
+          'Nomor WhatsApp ini mencoba klaim voucher lebih dari satu kali'
+        ]]);
+
         return res.status(200).json({
           ok:false,
           status:'duplicate',
+          namaPromo: promo.namaPromo,
           message:'Nomor WhatsApp ini sudah pernah klaim voucher untuk promo ini.'
         });
       }
@@ -98,13 +113,26 @@ module.exports = async function handler(req, res) {
     }
 
     if (sheetRow < 0) {
-  return res.status(200).json({
-    ok:false,
-    status:'habis',
-    namaPromo: promo.namaPromo,
-    message:`${promo.namaPromo} hari ini sudah habis.`
-  });
-}
+      const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Makassar' });
+      const nextLogGagalRow = (logGagalRows.length || 1) + 1;
+
+      await updateRange(`Log Klaim Gagal!A${nextLogGagalRow}:G${nextLogGagalRow}`, [[
+        now,
+        phone,
+        namaMember,
+        kodePromo,
+        promo.namaPromo,
+        'VOUCHER HABIS',
+        'Member mencoba klaim, tetapi voucher sudah habis'
+      ]]);
+
+      return res.status(200).json({
+        ok:false,
+        status:'habis',
+        namaPromo: promo.namaPromo,
+        message:`${promo.namaPromo} hari ini sudah habis.`
+      });
+    }
 
     const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Makassar' });
 

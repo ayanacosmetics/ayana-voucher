@@ -1,4 +1,18 @@
-const { readRange, findActivePromos } = require('./_common');
+const { readRange, updateRange, findActivePromos } = require('./_common');
+
+async function setPromoSelesai(kodePromo, promoRows) {
+  for (let i = 1; i < promoRows.length; i++) {
+    const rowKodePromo = String(promoRows[i][0] || '').trim();
+
+    if (rowKodePromo === kodePromo) {
+      const sheetRow = i + 1;
+      await updateRange(`Promo!G${sheetRow}:G${sheetRow}`, [['SELESAI']]);
+      return true;
+    }
+  }
+
+  return false;
+}
 
 module.exports = async function handler(req, res) {
   try {
@@ -35,6 +49,10 @@ module.exports = async function handler(req, res) {
       if (rowStatus === 'TERSEDIA') {
         tersedia++;
       }
+    }
+
+    if (total > 0 && tersedia === 0) {
+      await setPromoSelesai(kodePromoAktif, promoRows);
     }
 
     return res.status(200).json({

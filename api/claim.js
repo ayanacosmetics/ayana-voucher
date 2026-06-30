@@ -98,12 +98,13 @@ module.exports = async function handler(req, res) {
     }
 
     if (sheetRow < 0) {
-      return res.status(200).json({
-        ok:false,
-        status:'habis',
-        message:'Yah, voucher untuk promo ini sudah habis.'
-      });
-    }
+  return res.status(200).json({
+    ok:false,
+    status:'habis',
+    namaPromo: promo.namaPromo,
+    message:`${promo.namaPromo} hari ini sudah habis.`
+  });
+}
 
     const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Makassar' });
 

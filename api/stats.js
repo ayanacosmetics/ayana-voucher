@@ -13,11 +13,13 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({
         ok: true,
         tersedia: 0,
-        total: 0
+        total: 0,
+        namaPromo: ''
       });
     }
 
-    const kodePromoAktif = activePromos[0].kodePromo;
+    const promoAktif = activePromos[0];
+    const kodePromoAktif = promoAktif.kodePromo;
 
     let tersedia = 0;
     let total = 0;
@@ -38,6 +40,7 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       kodePromo: kodePromoAktif,
+      namaPromo: promoAktif.namaPromo,
       tersedia,
       total
     });

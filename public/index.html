@@ -200,7 +200,7 @@ function showResult(res){
 
     result.innerHTML =
     `<img src="/logo-ayana-baru.png" alt="Ayana Cosmetics" style="width:120px;max-width:70%;display:block;margin:0 auto 14px;object-fit:contain;">
-    <h1>🎁 Ayana Beauty Surprise</h1>
+    <h1>🎁 ${res.namaPromo || "Voucher Ayana"}</h1>
     <p>Selamat, ${res.nama}! Kamu mendapatkan voucher kejutan.</p>
 
     <div class="ticket">
@@ -244,9 +244,9 @@ function showResult(res){
     }
 
     if(res.status === "habis"){
-      judul = "😔 Voucher Sudah Habis";
-      pesan = "Ayana Beauty Surprise hari ini sudah habis.";
-      tips = "Nantikan voucher dan promo spesial berikutnya ya!";
+     judul = "😔 Voucher Sudah Habis";
+     pesan = res.message || `${res.namaPromo || "Voucher"} hari ini sudah habis.`;
+     tips = "Nantikan voucher dan promo spesial berikutnya ya!";
     }
 
     if(res.status === "inactive"){

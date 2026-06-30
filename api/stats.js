@@ -1,37 +1,51 @@
-const { readRange } = require('./_common');
+const { readRange, findActivePromos } = require('./_common');
 
 module.exports = async function handler(req, res) {
   try {
+    const [promoRows, voucherRows] = await Promise.all([
+      readRange('Promo!A:H'),
+      readRange('Voucher!A:G')
+    ]);
 
-    const voucherRows = await readRange('Voucher!A:G');
+    const activePromos = findActivePromos(promoRows);
+
+    if (!activePromos || activePromos.length === 0) {
+      return res.status(200).json({
+        ok: true,
+        tersedia: 0,
+        total: 0
+      });
+    }
+
+    const kodePromoAktif = activePromos[0].kodePromo;
 
     let tersedia = 0;
     let total = 0;
 
-    for(let i=1;i<voucherRows.length;i++){
+    for (let i = 1; i < voucherRows.length; i++) {
+      const rowKodePromo = String(voucherRows[i][1] || '').trim();
+      const rowStatus = String(voucherRows[i][2] || '').trim().toUpperCase();
 
-      if(String(voucherRows[i][1]||'').trim()!=="FLASH5K") continue;
+      if (rowKodePromo !== kodePromoAktif) continue;
 
       total++;
 
-      if(String(voucherRows[i][2]||'').trim().toUpperCase()==="TERSEDIA"){
+      if (rowStatus === 'TERSEDIA') {
         tersedia++;
       }
-
     }
 
-    res.status(200).json({
-      ok:true,
+    return res.status(200).json({
+      ok: true,
+      kodePromo: kodePromoAktif,
       tersedia,
       total
     });
 
-  } catch(err){
-
-    res.status(500).json({
-      ok:false,
-      message:err.message
+  } catch (err) {
+    return res.status(500).json({
+      ok: false,
+      message: err.message
     });
-
   }
-}
+};
